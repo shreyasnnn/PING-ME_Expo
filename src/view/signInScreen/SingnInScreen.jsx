@@ -3,7 +3,7 @@ import { View, Button, StyleSheet } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin, statusCodes, User } from '@react-native-google-signin/google-signin';
 
-const signInScreen = () => {
+const SignInScreen = () => {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: '1050971238885-et6rrvtvejvkfgrps0aa2bnfmj4rh6tq.apps.googleusercontent.com',
@@ -46,4 +46,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default signInScreen;
+export default SignInScreen;

@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "src/view/homeView.jsx", "App.jsx", "src/view/singnInScreen.jsx"  ]
+, "src/view/homeView.jsx", "App.jsx", "src/view/signInScreen/SingnInScreen.jsx"  ]
 }
