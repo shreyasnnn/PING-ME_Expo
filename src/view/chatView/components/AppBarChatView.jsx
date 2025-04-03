@@ -36,7 +36,7 @@ const AppBarChartView = ({contact, onBackPress, onMorePress}) => {
         }}>
         <View style={{width: 40, height: 40, borderRadius: 12,backgroundColor: '#E7E7E7',overflow: 'hidden'}}>
         <Image
-          source={{uri: contact.imageUrl}} // Replace with actual profile image URL
+          source={{uri: contact.profileImage}} // Replace with actual profile image URL
           style={{width: 40, height: 40, borderRadius: 12}}
         />
         </View>

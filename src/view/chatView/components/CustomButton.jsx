@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 
-export default function CustomButton({Icon}) {
+export default function CustomButton({Icon, handleOnPress}) {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={handleOnPress}>
         {Icon}
-    </View>
+    </TouchableOpacity>
   )
 }
 

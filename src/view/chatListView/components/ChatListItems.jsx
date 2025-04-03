@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function ChatListItems({contact}) {
   return (
-    <View key={contact.uid} style={styles.contactContainer}>
+    <View key={contact.userId} style={styles.contactContainer}>
       <View style={styles.img_name}>
         <View
           style={{
@@ -13,7 +13,7 @@ export default function ChatListItems({contact}) {
           }}>
           <Image
             source={{
-              uri: contact.imageUrl,
+              uri: contact.profileImage,
             }}
             style={styles.img}
           />
@@ -29,7 +29,7 @@ export default function ChatListItems({contact}) {
       </View>
       <View style={styles.time_unseen}>
         <Text style={{color: '#444746', fontWeight: 400, fontSize: 12}}>
-          {contact.time}
+          15:15
         </Text>
         <View style={styles.unseen}>
           <Text style={{color: '#fff'}}>99+</Text>

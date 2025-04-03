@@ -67,6 +67,7 @@ export default function UserDetailsScreen() {
 
     try {
       await firestore().collection('users').doc(user.uid).set({
+        userId: user.uid,
         email: user.email,
         name: name.trim(),
         nickname: nickname.trim(),

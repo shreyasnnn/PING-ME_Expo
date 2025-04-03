@@ -3,15 +3,16 @@ import {
   Text,
   View,
   ImageBackground,
-  Dimensions,
+  Dimensions
 } from 'react-native';
-import React from 'react';
+import React, { useEffect,useState } from 'react';
 import AppBarChatView from './components/AppBarChatView';
 import {useRoute} from '@react-navigation/native';
 import ChatBubble from './components/ChatBubble';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import SendMessageContainer from './components/SendMessageContainer';
 import LinearGradient from 'react-native-linear-gradient';
+import firestore from "@react-native-firebase/firestore";
 
 
 const messages = [
@@ -123,8 +124,33 @@ const messages = [
 ];
 
 const {height, width} = Dimensions.get('window');
+
 export default function ChatView({route, navigation}) {
-  const {contact} = route.params;
+  const [messages,setMessages] = useState([]);
+  const {contact, chatRoomId} = route.params;
+  useEffect(() => {
+    if (!chatRoomId) return;
+  
+    const chatRef = firestore()
+      .collection("chats")
+      .doc(chatRoomId)
+      .collection("messages")
+      .orderBy("time", "asc"); // Sort messages by time
+  
+    const unsubscribe = chatRef.onSnapshot((snapshot) => {
+      const loadedMessages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMessages(loadedMessages); // ✅ Set messages state
+      console.log("Messages loaded:", loadedMessages);
+    });
+  
+    return () => unsubscribe(); // ✅ Cleanup Firestore listener
+  }, [chatRoomId]);
+  
+
+
   return (
     <View>
       <ImageBackground
@@ -159,7 +185,7 @@ export default function ChatView({route, navigation}) {
             />
           ))}
         </ScrollView>
-        <SendMessageContainer />
+        <SendMessageContainer chatRoomId={chatRoomId}/>
       <LinearGradient
         colors={['transparent', 'white']}
         style={{
