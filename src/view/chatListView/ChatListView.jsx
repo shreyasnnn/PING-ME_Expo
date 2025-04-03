@@ -4,10 +4,11 @@ import Options from './components/Options';
 import ContactList from './components/ContactList';
 import SearchBar from './components/SearchBar';
 
-export default function ChatView({navigation}) {
+export default function ChatListView({navigation}) {
   const [isChatSelected, setIsChatSelected] = useState(true); //Chat or Group
   const [isSearchActive, setIsSearchActive] = useState(false);
   const {height, width} = Dimensions.get('window');
+  
 
   return (
     <View>
