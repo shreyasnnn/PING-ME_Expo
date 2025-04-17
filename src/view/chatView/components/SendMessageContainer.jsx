@@ -1,91 +1,218 @@
-import {StyleSheet, Text, View, TextInput} from 'react-native';
-import React from 'react';
-import AttachMessageIcon from '../../../../assets/options/AttachMessageIcon';
-import SendIcon from '../../../../assets/options/SendIcon';
-import CustomButton from './CustomButton';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-export default function SendMessageContainer({chatRoomId}) {
+import React, { useState, useRef, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Alert,
+} from "react-native";
+import AttachMessageIcon from "../../../../assets/options/AttachMessageIcon";
+import SendIcon from "../../../../assets/options/SendIcon";
+import CustomButton from "./CustomButton";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import storage from "@react-native-firebase/storage";
+import { launchImageLibrary } from "react-native-image-picker";
 
-  const sendMessage = async (chatRoomId, message, messageType) => {
-    try {
-      const sender = auth().currentUser.uid; // Get the current user's ID
-      if (!chatRoomId || !message || !sender) {
-        throw new Error("Missing required fields");
+export default function SendMessageContainer({ chatRoomId }) {
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [bottomOffset, setBottomOffset] = useState(0);
+  const typingTimeout = useRef(null);
+  const sender = auth().currentUser?.uid;
+
+  // Keyboard event listeners
+  useEffect(() => {
+    const keyboardShow = Keyboard.addListener("keyboardDidShow", (e) => {
+      setBottomOffset(e.endCoordinates.height);
+    });
+    const keyboardHide = Keyboard.addListener("keyboardDidHide", () => {
+      setBottomOffset(0);
+    });
+
+    return () => {
+      keyboardShow.remove();
+      keyboardHide.remove();
+
+      if (sender && chatRoomId) {
+        firestore()
+          .collection("chats")
+          .doc(chatRoomId)
+          .collection("typing")
+          .doc(sender)
+          .set({ typing: false }, { merge: true });
       }
-  
-      const messageTime = Date.now(); // Get current time in milliseconds
-      const messageId = `${new Date().toISOString()}_${messageTime}`; // Unique message ID
-  
+    };
+  }, []);
+
+  const updateTypingStatus = async (isTyping) => {
+    if (!chatRoomId || !sender) return;
+    await firestore()
+      .collection("chats")
+      .doc(chatRoomId)
+      .collection("typing")
+      .doc(sender)
+      .set({ typing: isTyping });
+  };
+
+  const handleTyping = (text) => {
+    setMessage(text);
+    updateTypingStatus(true);
+
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      updateTypingStatus(false);
+    }, 2000);
+  };
+
+  const sendMessage = async ({ type = "text", content }) => {
+    if (!chatRoomId || !sender || sending || (type === "text" && !content.trim())) return;
+
+    try {
+      setSending(true);
+
+      const messageData = {
+        sender,
+        message_type: type,
+        message_time: firestore.FieldValue.serverTimestamp(),
+        client_time: new Date(),
+      };
+
+      if (type === "text") {
+        messageData.message = content.trim();
+      } else {
+        messageData.media_url = content;
+      }
+
       await firestore()
         .collection("chats")
         .doc(chatRoomId)
         .collection("messages")
-        .doc(messageId)
-        .set({
-          message,
-          sender,
-          message_type: messageType || "text",
-          message_id: messageId,
-          message_time: messageTime,
-        });
-  
-      // ✅ Update the last message in chat document
-      await firestore().collection("chats").doc(chatRoomId).update({
+        .add(messageData);
+
+      const chatRoomRef = firestore().collection("chats").doc(chatRoomId);
+      const chatRoomSnap = await chatRoomRef.get();
+
+      if (!chatRoomSnap.exists) return;
+
+      const chatRoomData = chatRoomSnap.data();
+      const members = chatRoomData.members || [];
+      const unseenCounts = chatRoomData.unseenCounts || {};
+
+      members.forEach((memberUid) => {
+        if (memberUid !== sender) {
+          unseenCounts[memberUid] = (unseenCounts[memberUid] || 0) + 1;
+        }
+      });
+
+      await chatRoomRef.update({
         lastMessage: {
           sender,
-          time: messageTime,
-          message,
+          time: firestore.FieldValue.serverTimestamp(),
+          message: type === "text" ? content.trim() : (type === "image" ? "📷 Image" : "🎥 Video"),
         },
+        unseenCounts,
       });
-  
-      console.log("Message sent successfully!");
+
+      setMessage("");
+      updateTypingStatus(false);
     } catch (error) {
       console.error("Error sending message:", error);
+    } finally {
+      setSending(false);
     }
   };
-  
+
+  const handleMediaPick = () => {
+    launchImageLibrary(
+      {
+        mediaType: "mixed",
+        quality: 0.8,
+      },
+      async (response) => {
+        if (response.didCancel) return;
+        if (response.errorMessage) {
+          Alert.alert("Error", response.errorMessage);
+          return;
+        }
+
+        const asset = response.assets[0];
+        const fileName = `${Date.now()}_${asset.fileName}`;
+        const ref = storage().ref(`chatMedia/${chatRoomId}/${fileName}`);
+
+        try {
+          const uploadTask = await ref.putFile(asset.uri);
+          const downloadURL = await ref.getDownloadURL();
+
+          const type = asset.type.startsWith("image") ? "image" : "video";
+          sendMessage({ type, content: downloadURL });
+        } catch (error) {
+          console.error("Upload error:", error);
+          Alert.alert("Upload Failed", "Could not upload file.");
+        }
+      }
+    );
+  };
+
   return (
-    <View style={styles.sendMsgContainer}>
-      <CustomButton Icon={<AttachMessageIcon height={24} width={24} fillColor='#041E49' strokeColor='#fff'/>}/>
-      <View>
-        <TextInput
-          style={{
-            borderColor: '#d9d9d9',
-            borderWidth: 1,
-            flex: 1,
-            borderRadius: 25,
-            backgroundColor: '#fff',
-            fontSize: 16,
-            paddingLeft: 24,
-            paddingVertical: 15,
-            paddingRight: 95,
-          }}
-          placeholder="Type a message..."
-          placeholderTextColor={'#444746'}
-        />
-      </View>
-      <CustomButton Icon={<SendIcon height={20} width={20} strokeColor='white' fillColor='#041E49'  />} handleOnPress={()=>{sendMessage(chatRoomId,"shreyas","text")}}/>
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.sendMsgContainer}>
+          <CustomButton
+            Icon={<AttachMessageIcon height={24} width={24} />}
+            handleOnPress={handleMediaPick}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            value={message}
+            onChangeText={handleTyping}
+            multiline
+            maxLength={1000}
+            scrollEnabled
+            textAlignVertical="top"
+          />
+          <CustomButton
+            Icon={<SendIcon height={20} width={20} />}
+            handleOnPress={() => sendMessage({ type: "text", content: message })}
+            disabled={sending || !message.trim()}
+          />
+        </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    position: "absolute",
+    paddingBottom: Platform.OS === "ios" ? 16 : 8,
+  },
   sendMsgContainer: {
-    position: 'absolute',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+    borderColor: "#d9d9d9",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  input: {
+    flex: 1,
+    borderColor: "#d9d9d9",
+    borderWidth: 1,
+    borderRadius: 25,
+    backgroundColor: "#fff",
+    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     marginHorizontal: 8,
-    marginBottom: 42,
-    flexDirection: 'row',
-    zIndex: 10,
-    backgroundColor: 'shadow',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 10,
-  }
+    maxHeight: 72,
+    overflow: "scroll",
+  },
 });

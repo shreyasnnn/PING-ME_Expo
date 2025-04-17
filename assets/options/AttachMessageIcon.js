@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path , Rect} from 'react-native-svg';
 
-const AttachMessageIcon = ({width=10, height=10, fillColor='white', strokeColor='White'}) => {
+const AttachMessageIcon = ({width=10, height=10, fillColor='041E49', strokeColor='#fff'}) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
 <Path d="M6.9775 2.60538C8.73592 1.58436 10.7775 1 12.955 1C19.5575 1 24.91 6.37258 24.91 13C24.91 19.6274 19.5575 25 12.955 25C6.35243 25 1 19.6274 1 13C1 10.8143 1.58217 8.76504 2.59936 7" fill={fillColor}/>

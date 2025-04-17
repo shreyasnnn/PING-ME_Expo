@@ -1,19 +1,24 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, TouchableOpacity} from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import SearchIcon from '../../../../assets/options/SearchIcon';
-const SearchBar = ({isSearchActive, setIsSearchActive}) => {
+
+const SearchBar = ({ isSearchActive, setIsSearchActive, searchQuery, setSearchQuery }) => {
   return (
     <View style={styles.container}>
       <TextInput
         placeholder="Search a contact"
         placeholderTextColor="#666"
         style={styles.input}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
       />
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => {
           setIsSearchActive(false);
-        }}>
+          setSearchQuery('');
+        }}
+      >
         <SearchIcon />
       </TouchableOpacity>
     </View>
@@ -22,6 +27,7 @@ const SearchBar = ({isSearchActive, setIsSearchActive}) => {
 
 const styles = StyleSheet.create({
   container: {
+    height: 40,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',

@@ -1,30 +1,88 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export default function ChatBubble({message, time, isSent}) {
-    // const [height,Width]
+export default function ChatBubble({
+  message,
+  time,
+  isSent,
+  isGroupChat,
+  senderName,
+  onLongPress
+}) {
+  const bubbleStyle = isSent ? styles.sentBubble : styles.receivedBubble;
+  const textStyle = isSent ? styles.sentText : styles.receivedText;
+
+  const isTyping = message?.toLowerCase()?.includes("typing...");
+
   return (
-    <View style={{flexDirection: 'row',alignItems: 'flex-end',justifyContent: isSent ? 'flex-end':'flex-start',marginHorizontal: 18,paddingVertical: 4}}>
-        {isSent && <Text style={styles.time}>
-            {time}
-        </Text>}
-      <View style={{padding: 12,alignSelf: 'flex-start',maxWidth: "65%",backgroundColor: isSent ? '#041E49':'#F4F4F5', borderRadius: 8}}>
-        <Text style={{color: isSent ? '#FFFFFF':'#041E49',fontSize: 12,fontWeight: 400}}>
-            {message}
-        </Text>
-      </View>
-      {!isSent&&<Text style={styles.time}>
-            {time}
-      </Text>}
-    </View>
-  )
+    <View style={[styles.bubbleContainer, isSent ? styles.alignRight : styles.alignLeft]}>
+    {!isSent && isGroupChat && senderName && !isTyping && (
+      <Text style={styles.senderName}>{senderName}</Text>
+    )}
+
+    <TouchableOpacity
+      onLongPress={onLongPress}
+      activeOpacity={0.8}
+      style={[styles.bubble, bubbleStyle, isTyping && styles.typingBubble]}
+    >
+      <Text style={[styles.messageText, textStyle]}>{message}</Text>
+      {!isTyping && <Text style={styles.timeText}>{time}</Text>}
+    </TouchableOpacity>
+  </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    time:{
-        fontSize: 8,
-        fontWeight: 400,
-        color: '#444746',
-        paddingHorizontal: 4
-    }
-})
+  bubbleContainer: {
+    marginVertical: 6,
+    marginHorizontal: 10,
+    maxWidth: "75%",
+  },
+  alignRight: {
+    alignSelf: "flex-end",
+  },
+  alignLeft: {
+    alignSelf: "flex-start",
+  },
+  senderName: {
+    fontSize: 12,
+    color: "#888",
+    marginBottom: 2,
+    marginLeft: 4,
+  },
+  bubble: {
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  sentBubble: {
+    backgroundColor: "#041E49",
+  },
+  receivedBubble: {
+    backgroundColor: "#F4F4F5",
+  },
+  typingBubble: {
+    backgroundColor: "#E0E0E0",
+    fontStyle: "italic",
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  sentText: {
+    color: "#fff",
+  },
+  receivedText: {
+    color: "#000",
+  },
+  timeText: {
+    fontSize: 10,
+    color: "#999",
+    alignSelf: "flex-end",
+    marginTop: 4,
+  },
+});

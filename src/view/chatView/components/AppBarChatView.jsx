@@ -1,18 +1,26 @@
 import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import BackArrowIcon from '../../../../assets/options/BackArrowIcon';
-import Menu from '../../../../assets/options/Menu'
+import Menu from '../../../../assets/options/Menu';
 
-const AppBarChartView = ({contact, onBackPress, onMorePress}) => {
+const getStatusText = (status) => {
+  if (!status) return "";
+  if (status.online) return "Online";
+  if (status.lastSeen) {
+    const lastSeenDate = status.lastSeen.toDate();
+    return `Last seen at ${lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+  return ""; // nothing if no info
+};
+
+const AppBarChatView = ({ contact, contactStatus, onBackPress, onMorePress }) => {
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-      }}>
-      {/* Back Button */}
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    }}>
       <TouchableOpacity
         onPress={onBackPress}
         style={{
@@ -26,28 +34,37 @@ const AppBarChartView = ({contact, onBackPress, onMorePress}) => {
         <BackArrowIcon height={36} width={36} fillColor="white" />
       </TouchableOpacity>
 
-      {/* Profile & Name */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginLeft: 8,
-          flex: 1,
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginLeft: 8,
+        flex: 1,
+      }}>
+        <View style={{
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          backgroundColor: '#E7E7E7',
+          overflow: 'hidden'
         }}>
-        <View style={{width: 40, height: 40, borderRadius: 12,backgroundColor: '#E7E7E7',overflow: 'hidden'}}>
-        <Image
-          source={{uri: contact.profileImage}} // Replace with actual profile image URL
-          style={{width: 40, height: 40, borderRadius: 12}}
-        />
+          <Image
+            source={{ uri: contact.profileImage }}
+            style={{ width: 40, height: 40, borderRadius: 12 }}
+          />
         </View>
-        <View style={{marginLeft: 8}}>
-          <Text style={{fontSize: 16, fontWeight: 'bold',color: '#fff'}}>{contact.name}</Text>
-          <Text style={{fontSize: 12, color: 'white'}}>Just a min ago</Text>
+        <View style={{ marginLeft: 8 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>
+            {contact.name}
+          </Text>
+          <Text style={{ fontSize: 12, color: 'white' }}>
+            {getStatusText(contactStatus)}
+          </Text>
         </View>
       </View>
 
-      {/* More Options */}
-      <TouchableOpacity onPress={onMorePress} style={{
+      <TouchableOpacity
+        onPress={onMorePress}
+        style={{
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: '#fff',
@@ -61,4 +78,4 @@ const AppBarChartView = ({contact, onBackPress, onMorePress}) => {
   );
 };
 
-export default AppBarChartView;
+export default AppBarChatView;
