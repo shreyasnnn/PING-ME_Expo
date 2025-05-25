@@ -57,7 +57,7 @@ You can also run on device/emulatore by:
    pnpm expo run:android
    pnpm expo run:ios
 ```
-##🧪 Known Improvements (Future Work)
+## 🧪 Known Improvements (Future Work)
 🧠 Emoji reaction modal (partially implemented)
 
 👁️ "Seen" status per user in chats
@@ -66,11 +66,11 @@ You can also run on device/emulatore by:
 
 📂 Media validation and file preview improvements
 
-##🤝 Contributing
+## 🤝 Contributing
 Contributions, ideas, and feature requests are welcome!
 Feel free to open a pull request or an issue to discuss what you’d like to work on.
 
-##📄 License
+## 📄 License
 This project is licensed under the MIT License.
 
 
