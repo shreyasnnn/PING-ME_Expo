@@ -12,9 +12,9 @@ PING-ME_Expo is a real-time chat application built with **React Native** and **E
 - ✅ Typing indicators
 - ✅ Real-time updates using Firestore
 - ✅ Online/offline status tracking
-- ✅ Image and video upload support
+- ⏳ Image and video upload support
 - ✅ Individual `lastMessage` tracking per user
-- ✅ Reply to messages
+- ⏳ Reply to messages
 - ✅ Modular component architecture
 - ⏳ Emoji reaction modal (in progress)
 
