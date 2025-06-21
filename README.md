@@ -2,6 +2,8 @@
 
 PING-ME_Expo is a real-time chat application built with **React Native** and **Expo**, designed to deliver a modern messaging experience with support for features like message forwarding, deletion, long-press actions, and emoji reactions. The app uses **Firebase Firestore** for real-time communication and data storage.
 
+## Install APK: https://drive.google.com/file/d/1-hzksgbaTjTYoBwn9JCCgpVc4Rcw7_B7/view?usp=sharing
+
 ## ✨ Features
 
 - ✅ One-to-one and group messaging
